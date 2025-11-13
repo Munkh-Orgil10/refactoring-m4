@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Holds all data needed to render a statement.
+ * Holds all calculated data related to an invoice.
  */
 public class StatementData {
 
@@ -13,59 +13,62 @@ public class StatementData {
     private final List<PerformanceData> performances = new ArrayList<>();
 
     /**
-     * Constructs statement data from the given invoice and plays.
+     * Constructs the calculated statement data for an invoice.
      *
-     * @param invoice the invoice
-     * @param plays   mapping of play IDs to Play objects
+     * @param invoice the invoice information
+     * @param plays   the map of playID to Play objects
      */
     public StatementData(Invoice invoice, Map<String, Play> plays) {
         this.customer = invoice.getCustomer();
+
         for (Performance performance : invoice.getPerformances()) {
             Play play = plays.get(performance.getPlayID());
-            performances.add(new PerformanceData(performance, play));
+            performances.add(createPerformanceData(performance, play));
         }
     }
 
-    /**
-     * Returns the customer name.
-     *
-     * @return the customer name
-     */
+    /** Returns customer name. */
     public String getCustomer() {
         return customer;
     }
 
-    /**
-     * Returns the list of per-performance data.
-     *
-     * @return the performance data list
-     */
+    /** Returns performance-level calculated data. */
     public List<PerformanceData> getPerformances() {
         return performances;
     }
 
     /**
-     * Computes the total amount owed for this statement.
-     *
-     * @return the total amount in cents
+     * Extracted helper that creates a PerformanceData object
+     * and initializes a calculator for future refactoring steps.
+     */
+    private PerformanceData createPerformanceData(Performance performance, Play play) {
+
+        // This will eventually choose a subclass (tragedy/comedy/etc.)
+        AbstractPerformanceCalculator calculator =
+                AbstractPerformanceCalculator.createPerformanceCalculator(performance, play);
+
+        // Currently calculator is not used yet — that comes in Task 4.2.
+        return new PerformanceData(performance, play);
+    }
+
+    /**
+     * Computes the total amount owed.
      */
     public int totalAmount() {
         int result = 0;
-        for (PerformanceData performanceData : performances) {
-            result += performanceData.getAmount();
+        for (PerformanceData perf : performances) {
+            result += perf.getAmount();
         }
         return result;
     }
 
     /**
-     * Computes the total volume credits for this statement.
-     *
-     * @return the total volume credits
+     * Computes the total volume credits.
      */
     public int volumeCredits() {
         int result = 0;
-        for (PerformanceData performanceData : performances) {
-            result += performanceData.getVolumeCredits();
+        for (PerformanceData perf : performances) {
+            result += perf.getVolumeCredits();
         }
         return result;
     }
