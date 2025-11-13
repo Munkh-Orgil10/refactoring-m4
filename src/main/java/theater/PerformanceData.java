@@ -7,62 +7,49 @@ public class PerformanceData {
 
     private final Performance performance;
     private final Play play;
+    private final int amount;
+    private final int volumeCredits;
 
-    public PerformanceData(Performance performance, Play play) {
+    /**
+     * Constructs data for a performance.
+     *
+     * @param performance   the performance record
+     * @param play          the play details
+     * @param amount        amount owed for this performance (in cents)
+     * @param volumeCredits volume credits earned for this performance
+     */
+    public PerformanceData(Performance performance,
+                           Play play,
+                           int amount,
+                           int volumeCredits) {
         this.performance = performance;
         this.play = play;
+        this.amount = amount;
+        this.volumeCredits = volumeCredits;
     }
 
+    /** Returns audience size. */
     public int getAudience() {
         return performance.getAudience();
     }
 
+    /** Returns the play type. */
     public String getType() {
         return play.getType();
     }
 
+    /** Returns the play name. */
     public String getPlayName() {
         return play.getName();
     }
 
+    /** Returns the pre-computed amount (in cents). */
     public int getAmount() {
-        int result;
-
-        switch (getType()) {
-            case "tragedy":
-                result = Constants.TRAGEDY_BASE_AMOUNT;
-                if (getAudience() > Constants.TRAGEDY_AUDIENCE_THRESHOLD) {
-                    result += Constants.TRAGEDY_OVER_BASE_CAPACITY_PER_PERSON
-                            * (getAudience() - Constants.TRAGEDY_AUDIENCE_THRESHOLD);
-                }
-                break;
-
-            case "comedy":
-                result = Constants.COMEDY_BASE_AMOUNT;
-                if (getAudience() > Constants.COMEDY_AUDIENCE_THRESHOLD) {
-                    result += Constants.COMEDY_OVER_BASE_CAPACITY_AMOUNT
-                            + Constants.COMEDY_OVER_BASE_CAPACITY_PER_PERSON
-                            * (getAudience() - Constants.COMEDY_AUDIENCE_THRESHOLD);
-                }
-                result += Constants.COMEDY_AMOUNT_PER_AUDIENCE * getAudience();
-                break;
-
-            default:
-                throw new RuntimeException(
-                        String.format("unknown type: %s", getType()));
-        }
-
-        return result;
+        return amount;
     }
 
+    /** Returns the pre-computed volume credits. */
     public int getVolumeCredits() {
-        int result = Math.max(
-                getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD, 0);
-
-        if ("comedy".equals(getType())) {
-            result += getAudience() / Constants.COMEDY_EXTRA_VOLUME_FACTOR;
-        }
-
-        return result;
+        return volumeCredits;
     }
 }

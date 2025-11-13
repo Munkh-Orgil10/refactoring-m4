@@ -43,12 +43,11 @@ public class StatementData {
      */
     private PerformanceData createPerformanceData(Performance performance, Play play) {
 
-        // This will eventually choose a subclass (tragedy/comedy/etc.)
         AbstractPerformanceCalculator calculator =
                 AbstractPerformanceCalculator.createPerformanceCalculator(performance, play);
-
-        // Currently calculator is not used yet — that comes in Task 4.2.
-        return new PerformanceData(performance, play);
+        int amount = calculator.getAmount();
+        int volumeCredits = calculator.getVolumeCredits();
+        return new PerformanceData(performance, play, amount, volumeCredits);
     }
 
     /**
