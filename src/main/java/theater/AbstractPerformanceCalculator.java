@@ -2,9 +2,9 @@ package theater;
 
 /**
  * Calculator for quantities related to a performance.
- * (Will later be subclassed for different play types.)
+ * Different play types will be handled by subclasses.
  */
-public class AbstractPerformanceCalculator {
+public abstract class AbstractPerformanceCalculator {
 
     protected final Performance performance;
     protected final Play play;
@@ -21,63 +21,42 @@ public class AbstractPerformanceCalculator {
     }
 
     /**
-     * Factory method for creating a performance calculator.
-     * For now, this simply returns a basic calculator, but
-     * later it will select an appropriate subclass.
+     * Factory method for creating a performance calculator for
+     * the given performance and play.
      *
      * @param performance the performance
      * @param play        the play details
-     * @return a new calculator
+     * @return a calculator instance appropriate for the play type
      */
     public static AbstractPerformanceCalculator createPerformanceCalculator(
             Performance performance, Play play) {
-        return new AbstractPerformanceCalculator(performance, play);
-    }
-
-    /**
-     * Computes the amount owed for this performance (in cents).
-     */
-    public int getAmount() {
-        int result;
-
         switch (play.getType()) {
             case "tragedy":
-                result = Constants.TRAGEDY_BASE_AMOUNT;
-                if (performance.getAudience() > Constants.TRAGEDY_AUDIENCE_THRESHOLD) {
-                    result += Constants.TRAGEDY_OVER_BASE_CAPACITY_PER_PERSON
-                            * (performance.getAudience() - Constants.TRAGEDY_AUDIENCE_THRESHOLD);
-                }
-                break;
-
+                return new TragedyCalculator(performance, play);
             case "comedy":
-                result = Constants.COMEDY_BASE_AMOUNT;
-                if (performance.getAudience() > Constants.COMEDY_AUDIENCE_THRESHOLD) {
-                    result += Constants.COMEDY_OVER_BASE_CAPACITY_AMOUNT
-                            + Constants.COMEDY_OVER_BASE_CAPACITY_PER_PERSON
-                            * (performance.getAudience() - Constants.COMEDY_AUDIENCE_THRESHOLD);
-                }
-                result += Constants.COMEDY_AMOUNT_PER_AUDIENCE * performance.getAudience();
-                break;
-
+                return new ComedyCalculator(performance, play);
             default:
                 throw new RuntimeException(
                         String.format("unknown type: %s", play.getType()));
         }
-
-        return result;
     }
 
     /**
+     * Computes the amount owed for this performance (in cents).
+     * Subclasses must implement this.
+     *
+     * @return the amount in cents
+     */
+    public abstract int getAmount();
+
+    /**
      * Computes the volume credits for this performance.
+     * Subclasses may override to add extra behaviour.
+     *
+     * @return the volume credits
      */
     public int getVolumeCredits() {
-        int result = Math.max(
+        return Math.max(
                 performance.getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD, 0);
-
-        if ("comedy".equals(play.getType())) {
-            result += performance.getAudience() / Constants.COMEDY_EXTRA_VOLUME_FACTOR;
-        }
-
-        return result;
     }
 }
